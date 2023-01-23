@@ -18,13 +18,15 @@ pub fn hk_resize_buffers(
     swap_chain_flags: u32,
 ) -> HRESULT {
     unsafe {
-        ResizeBuffers.call(
-            swap_chain,
-            buffer_count,
-            width,
-            height,
-            new_format,
-            swap_chain_flags,
-        )
+        crate::overlay::APP.resize_buffers(&swap_chain, || {
+            ResizeBuffers.call(
+                swap_chain.clone(), // TODO: Fix crash. This causes a crash when unloaded and the window attempts to be resized.
+                buffer_count,
+                width,
+                height,
+                new_format,
+                swap_chain_flags,
+            )
+        })
     }
 }

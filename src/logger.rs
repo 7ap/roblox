@@ -27,15 +27,21 @@ impl Log for Logger {
             let message = record.args();
 
             match record.level() {
-                Level::Error => {
+                Level::Error => unsafe {
+                    crate::overlay::TOASTS.error(message.to_string());
+
                     println!("[error] {}", message);
-                }
-                Level::Warn => {
+                },
+                Level::Warn => unsafe {
+                    crate::overlay::TOASTS.warning(message.to_string());
+
                     println!("[warn] {}", message);
-                }
-                Level::Info => {
+                },
+                Level::Info => unsafe {
+                    crate::overlay::TOASTS.info(message.to_string());
+
                     println!("[info] {}", message);
-                }
+                },
                 Level::Debug => {
                     println!("[debug] {}", message);
                 }

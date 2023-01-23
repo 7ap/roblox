@@ -12,6 +12,8 @@ pub unsafe extern "stdcall" fn hk_wnd_proc(
     wparam: WPARAM,
     lparam: LPARAM,
 ) -> LRESULT {
+    crate::overlay::APP.wnd_proc(msg, wparam, lparam);
+
     CallWindowProcW(OLD_WND_PROC.unwrap(), hwnd, msg, wparam, lparam)
 }
 

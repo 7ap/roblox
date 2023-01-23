@@ -10,6 +10,9 @@ crate-type = ["cdylib"]
 [dependencies]
 anyhow = "1.0"
 detour = { git = "https://github.com/Hpmason/detour-rs", branch = "fix-nightly1.67.0-changes" }
+egui = "0.19"
+egui-d3d11 = "0.8"
+egui-notify = "0.4"
 log = "0.4"
 pelite = "0.10"
 shroud = { version = "*", features = ["directx11"] }

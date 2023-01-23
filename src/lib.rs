@@ -3,6 +3,7 @@
 
 mod hooks;
 mod logger;
+mod overlay;
 mod rbx;
 
 use std::thread;

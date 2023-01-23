@@ -18,6 +18,8 @@ pub fn hk_present(swap_chain: IDXGISwapChain, sync_interval: u32, flags: u32) ->
         static SETUP: Once = Once::new();
 
         SETUP.call_once(|| {
+            crate::overlay::APP.init_default(&swap_chain, crate::overlay::ui);
+
             let desc = swap_chain.GetDesc().unwrap();
 
             if desc.OutputWindow.0 == -1 {
@@ -29,6 +31,8 @@ pub fn hk_present(swap_chain: IDXGISwapChain, sync_interval: u32, flags: u32) ->
             // This is really messy. I'd like this to be in hooks::create however it will cause a weird race condition.
             crate::hooks::window_proc::create().unwrap();
         });
+
+        crate::overlay::APP.present(&swap_chain);
 
         Present.call(swap_chain, sync_interval, flags)
     }
