@@ -1,3 +1,5 @@
+mod hooks;
+
 use std::thread;
 use std::time::Duration;
 
@@ -7,9 +9,13 @@ use windows::Win32::System::LibraryLoader::*;
 use windows::Win32::UI::Input::KeyboardAndMouse::*;
 
 unsafe fn main() -> Result<()> {
+    hooks::create()?;
+
     while !GetAsyncKeyState(VK_END.0.into()) & 0x01 == 0x01 {
         thread::sleep(Duration::from_millis(50));
     }
+
+    hooks::restore()?;
 
     Ok(())
 }
