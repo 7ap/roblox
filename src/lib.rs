@@ -1,7 +1,8 @@
 mod hooks;
+mod logger;
 
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use anyhow::Result;
 use windows::Win32::Foundation::*;
@@ -9,7 +10,12 @@ use windows::Win32::System::LibraryLoader::*;
 use windows::Win32::UI::Input::KeyboardAndMouse::*;
 
 unsafe fn main() -> Result<()> {
+    let start_time = Instant::now();
+
+    logger::init()?;
     hooks::create()?;
+
+    log::info!("Initialized in {}ms.", start_time.elapsed().as_millis());
 
     while !GetAsyncKeyState(VK_END.0.into()) & 0x01 == 0x01 {
         thread::sleep(Duration::from_millis(50));

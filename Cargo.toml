@@ -9,6 +9,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 anyhow = "1.0"
+log = "0.4"
 
 [dependencies.windows]
 version = "*"
