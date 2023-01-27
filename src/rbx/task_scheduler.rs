@@ -11,20 +11,32 @@ use super::constants::task_scheduler;
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
-pub struct TaskSchedulerJob; // TODO: Reconstruct struct
+pub struct TaskSchedulerJob {
+    /// Virtual method table.
+    functions: *const usize,
+    /// Ignore.
+    _pad0: [c_char; 0x0C],
+    /// This is a `const std::string`, however due to small string optimization (and rust not having bindings for std::string) we need to use a function to "resolve" the full string: `get_name`.
+    name: usize,
+}
 
 impl TaskSchedulerJob {
     pub unsafe fn get_name(&self) -> String {
-        let name_ptr = ptr::from_ref(self).byte_offset(task_scheduler::job::NAME) as *const usize;
-
-        let name = CStr::from_ptr(name_ptr as *const c_char).to_str();
+        let name = CStr::from_ptr(ptr::addr_of!(self.name) as *const c_char).to_str();
 
         if name.is_err() {
-            let name = *(name_ptr as *const *const c_char);
+            let name = *(ptr::addr_of!(self.name) as *const *const c_char);
             return String::from_utf8_lossy(CStr::from_ptr(name).to_bytes()).to_string();
         }
 
-        name.unwrap().to_string()
+        let name = name.unwrap();
+
+        // TODO: This is a naive "check" and should be replaced with a proper solution at some point.
+        if !name.is_ascii() || name.is_empty() || name.contains('\n') {
+            return String::from("Unknown Job");
+        }
+
+        name.to_string()
     }
 }
 
