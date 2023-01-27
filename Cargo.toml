@@ -18,7 +18,7 @@ pelite = "0.10"
 shroud = { version = "*", features = ["directx11"] }
 
 [dependencies.windows]
-version = "*"
+version = "0.36"
 features = [
     "Win32_Foundation",
     "Win32_Graphics_Dxgi",
