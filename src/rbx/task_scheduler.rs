@@ -16,27 +16,21 @@ pub struct TaskSchedulerJob {
     functions: *const usize,
     /// Ignore.
     _pad0: [c_char; 0x0C],
-    /// This is a `const std::string`, however due to small string optimization (and rust not having bindings for std::string) we need to use a function to "resolve" the full string: `get_name`.
+    /// Name of this job.
     name: usize,
 }
 
 impl TaskSchedulerJob {
     pub unsafe fn get_name(&self) -> String {
-        let name = CStr::from_ptr(ptr::addr_of!(self.name) as *const c_char).to_str();
+        let name = ptr::addr_of!(self.name);
 
-        if name.is_err() {
-            let name = *(ptr::addr_of!(self.name) as *const *const c_char);
-            return String::from_utf8_lossy(CStr::from_ptr(name).to_bytes()).to_string();
+        if *(name.byte_offset(0x10) as *const usize) < 16 {
+            let name = name as *const c_char;
+            return CStr::from_ptr(name).to_string_lossy().to_string();
         }
 
-        let name = name.unwrap();
-
-        // TODO: This is a naive "check" and should be replaced with a proper solution at some point.
-        if !name.is_ascii() || name.is_empty() || name.contains('\n') {
-            return String::from("Unknown Job");
-        }
-
-        name.to_string()
+        let name = *(name as *const *const c_char);
+        CStr::from_ptr(name).to_string_lossy().to_string()
     }
 }
 
