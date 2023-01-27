@@ -1,4 +1,4 @@
-use std::ptr::{self, NonNull};
+use std::ptr::NonNull;
 
 use super::constants::data_model;
 use super::task_scheduler::TaskScheduler;
