@@ -15,6 +15,7 @@ use windows::Win32::Foundation::*;
 use windows::Win32::System::LibraryLoader::*;
 use windows::Win32::UI::Input::KeyboardAndMouse::*;
 
+use crate::rbx::data_model::DataModel;
 use crate::rbx::task_scheduler::TaskScheduler;
 
 unsafe fn main() -> Result<()> {
@@ -27,6 +28,8 @@ unsafe fn main() -> Result<()> {
 
     let task_scheduler = TaskScheduler::get().as_ref();
     task_scheduler.print_jobs();
+
+    let data_model = DataModel::get().as_ref();
 
     while !GetAsyncKeyState(VK_END.0.into()) & 0x01 == 0x01 {
         thread::sleep(Duration::from_millis(50));
