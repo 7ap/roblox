@@ -19,12 +19,14 @@ impl Deref for DataModel {
 
 impl DataModel {
     pub unsafe fn get() -> NonNull<Self> {
-        let data_model = *(TaskScheduler::get()
+        let data_model = (*(TaskScheduler::get()
             .as_ref()
             .get_jobs_by_name("Render")
             .unwrap()
             .as_ptr()
-            .byte_offset(data_model::OFFSET) as *const *const usize);
+            .byte_offset(data_model::OFFSET) as *const *const usize)
+            as *const usize)
+            .byte_offset(0x04);
 
         log::trace!("DataModel @ {:#08X?}", data_model.addr());
 
