@@ -5,6 +5,9 @@ mod constants {
         pub static OFFSET: isize = 0x28;
     }
 
+    // `Instance`
+    pub mod instance {}
+
     /// `ScriptContext`
     pub mod script_context {
         /// Offset of `WaitingHybridScriptsJob` containing a `ScriptContext` pointer.
@@ -22,5 +25,6 @@ mod constants {
 }
 
 pub mod data_model;
+pub mod instance;
 pub mod script_context;
 pub mod task_scheduler;

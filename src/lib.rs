@@ -6,6 +6,7 @@ mod hooks;
 mod logger;
 mod overlay;
 mod rbx;
+mod utilities;
 
 use std::thread;
 use std::time::{Duration, Instant};
@@ -27,11 +28,14 @@ unsafe fn main() -> Result<()> {
 
     log::info!("Initialized in {}ms.", start_time.elapsed().as_millis());
 
-    let task_scheduler = TaskScheduler::get().as_ref();
-    let script_context = ScriptContext::get().as_ref();
-    let data_model = DataModel::get().as_ref();
+    let task_scheduler = TaskScheduler::get();
+    log::info!("TaskScheduler @ {:#08X?}", task_scheduler.addr());
 
-    task_scheduler.print_jobs();
+    let data_model = DataModel::get();
+    log::info!("DataModel @ {:#08X?}", data_model.addr());
+
+    let script_context = ScriptContext::get();
+    log::info!("ScriptContext @ {:#08X?}", script_context.addr());
 
     while !GetAsyncKeyState(VK_END.0.into()) & 0x01 == 0x01 {
         thread::sleep(Duration::from_millis(50));

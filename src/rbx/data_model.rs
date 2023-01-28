@@ -1,11 +1,21 @@
+use std::ops::Deref;
 use std::ptr::NonNull;
 
 use super::constants::data_model;
+use super::instance::Instance;
 use super::task_scheduler::TaskScheduler;
 
 #[repr(C)]
-#[derive(Clone, Copy, Debug)]
-pub struct DataModel;
+pub struct DataModel {
+    _super: Instance,
+}
+
+impl Deref for DataModel {
+    type Target = Instance;
+    fn deref(&self) -> &Self::Target {
+        &self._super
+    }
+}
 
 impl DataModel {
     pub unsafe fn get() -> NonNull<Self> {
@@ -16,7 +26,7 @@ impl DataModel {
             .as_ptr()
             .byte_offset(data_model::OFFSET) as *const *const usize);
 
-        log::debug!("DataModel @ {:#08X?}", data_model.addr());
+        log::trace!("DataModel @ {:#08X?}", data_model.addr());
 
         NonNull::<DataModel>::new(data_model as *mut _).unwrap()
     }

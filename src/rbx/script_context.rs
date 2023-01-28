@@ -1,11 +1,11 @@
 use std::ptr::NonNull;
 
 use super::constants::script_context;
+use super::instance::Instance;
 use super::task_scheduler::TaskScheduler;
 
 #[repr(C)]
-#[derive(Clone, Copy, Debug)]
-pub struct ScriptContext;
+pub struct ScriptContext(Instance);
 
 impl ScriptContext {
     pub unsafe fn get() -> NonNull<Self> {
@@ -17,7 +17,7 @@ impl ScriptContext {
             .byte_offset(script_context::OFFSET)
             as *const *const usize);
 
-        log::debug!("ScriptContext @ {:#08X?}", script_context.addr());
+        log::trace!("ScriptContext @ {:#08X?}", script_context.addr());
 
         NonNull::<ScriptContext>::new(script_context as *mut _).unwrap()
     }

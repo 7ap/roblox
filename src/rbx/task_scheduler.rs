@@ -8,35 +8,27 @@ use windows::core::*;
 use windows::Win32::System::LibraryLoader::*;
 
 use super::constants::task_scheduler;
+use crate::utilities;
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct TaskSchedulerJob {
-    /// Virtual method table.
-    functions: *const usize,
-    /// Ignore.
-    _pad0: [c_char; 0x0C],
-    /// Name of this job.
-    name: usize,
+    vtable: *const usize,  // 0x0000
+    this: *const Self,     // 0x0004
+    _pad0: [c_char; 0x08], // 0x0008..0x000C
+    name: usize,           // 0x0010
 }
 
 impl TaskSchedulerJob {
+    // TODO: Remove this. This is ugly.
     pub unsafe fn get_name(&self) -> String {
-        let name = ptr::addr_of!(self.name);
-
-        if *(name.byte_offset(0x10) as *const usize) < 16 {
-            let name = name as *const c_char;
-            return CStr::from_ptr(name).to_string_lossy().to_string();
-        }
-
-        let name = *(name as *const *const c_char);
-        CStr::from_ptr(name).to_string_lossy().to_string()
+        utilities::read_string(ptr::addr_of!(self.name))
     }
 }
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
-pub struct TaskScheduler; // TODO: Reconstruct struct
+pub struct TaskScheduler; // TODO: Reconstruct
 
 impl TaskScheduler {
     pub unsafe fn get() -> NonNull<Self> {
@@ -52,10 +44,10 @@ impl TaskScheduler {
         }
 
         let address = base as usize + save[0] as usize;
-        log::debug!("TaskScheduler::get @ {:#08X?}", address);
+        log::trace!("TaskScheduler::get @ {:#08X?}", address);
 
         let get_task_scheduler: extern "cdecl" fn() -> *const usize = mem::transmute(address);
-        log::debug!("TaskScheduler @ {:#08X?}", get_task_scheduler() as usize);
+        log::trace!("TaskScheduler @ {:#08X?}", get_task_scheduler() as usize);
 
         NonNull::<TaskScheduler>::new((get_task_scheduler()) as *mut _).unwrap()
     }
@@ -68,8 +60,8 @@ impl TaskScheduler {
         let end =
             *(ptr::from_ref(self).byte_offset(task_scheduler::JOBS + 0x04) as *const *const usize);
 
-        log::debug!("Job @ {:#08X?}", job.addr());
-        log::debug!("End @ {:#08X?}", end.addr());
+        log::trace!("Job @ {:#08X?}", job.addr());
+        log::trace!("End @ {:#08X?}", end.addr());
 
         while job != end {
             jobs.push(NonNull::<TaskSchedulerJob>::new(*job as *mut _).unwrap());
