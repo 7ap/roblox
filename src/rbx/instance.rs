@@ -1,3 +1,5 @@
+use std::ptr::NonNull;
+
 use crate::utilities;
 
 #[repr(C)]
@@ -16,5 +18,20 @@ pub struct Instance {
 impl Instance {
     pub unsafe fn get_name(&self) -> String {
         utilities::read_string(self.name)
+    }
+
+    pub unsafe fn get_children(&self) -> Vec<NonNull<Instance>> {
+        let mut children = Vec::new();
+
+        // Define bounds of the children vector
+        let mut child = *(self.children as *const *const usize);
+        let end_child = *(self.children.byte_offset(0x04) as *const *const usize);
+
+        while child != end_child {
+            children.push(NonNull::<Instance>::new(*child as *mut _).unwrap());
+            child = child.byte_offset(0x08);
+        }
+
+        children
     }
 }

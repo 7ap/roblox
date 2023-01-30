@@ -33,6 +33,12 @@ unsafe fn main() -> Result<()> {
     let data_model = DataModel::get();
     log::info!("DataModel @ {:#08X?}", data_model.addr());
 
+    for child in data_model.as_ref().get_children().iter() {
+        let name = child.as_ref().get_name();
+
+        log::info!("{} @ {:#08X?}", name, child.addr());
+    }
+
     while !GetAsyncKeyState(VK_END.0.into()) & 0x01 == 0x01 {
         thread::sleep(Duration::from_millis(50));
     }
