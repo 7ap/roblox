@@ -8,12 +8,6 @@ mod constants {
     // `Instance`
     pub mod instance {}
 
-    /// `ScriptContext`
-    pub mod script_context {
-        /// Offset of `WaitingHybridScriptsJob` containing a `ScriptContext` pointer.
-        pub static OFFSET: isize = 0x130;
-    }
-
     /// `TaskScheduler`
     pub mod task_scheduler {
         /// Pattern of the `TaskScheduler::get` function.
@@ -26,5 +20,4 @@ mod constants {
 
 pub mod data_model;
 pub mod instance;
-pub mod script_context;
 pub mod task_scheduler;

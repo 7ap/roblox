@@ -17,7 +17,6 @@ use windows::Win32::System::LibraryLoader::*;
 use windows::Win32::UI::Input::KeyboardAndMouse::*;
 
 use crate::rbx::data_model::DataModel;
-use crate::rbx::script_context::ScriptContext;
 use crate::rbx::task_scheduler::TaskScheduler;
 
 unsafe fn main() -> Result<()> {
@@ -33,9 +32,6 @@ unsafe fn main() -> Result<()> {
 
     let data_model = DataModel::get();
     log::info!("DataModel @ {:#08X?}", data_model.addr());
-
-    let script_context = ScriptContext::get();
-    log::info!("ScriptContext @ {:#08X?}", script_context.addr());
 
     while !GetAsyncKeyState(VK_END.0.into()) & 0x01 == 0x01 {
         thread::sleep(Duration::from_millis(50));
