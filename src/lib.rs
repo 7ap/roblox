@@ -8,6 +8,7 @@ mod overlay;
 mod rbx;
 mod utilities;
 
+use std::ptr;
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -28,12 +29,11 @@ unsafe fn main() -> Result<()> {
     log::info!("Initialized in {}ms.", start_time.elapsed().as_millis());
 
     let task_scheduler = TaskScheduler::get();
-    log::info!("TaskScheduler @ {:#08X?}", task_scheduler.addr());
-
     let data_model = DataModel::get();
-    log::info!("DataModel @ {:#08X?}", data_model.addr());
 
-    for child in data_model.as_ref().get_children().iter() {
+    task_scheduler.print_jobs();
+
+    for child in data_model.get_children().iter() {
         let name = child.as_ref().get_name();
 
         log::info!("{} @ {:#08X?}", name, child.addr());

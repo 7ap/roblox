@@ -31,7 +31,7 @@ impl TaskSchedulerJob {
 pub struct TaskScheduler; // TODO: Reconstruct
 
 impl TaskScheduler {
-    pub unsafe fn get() -> NonNull<Self> {
+    pub unsafe fn get() -> &'static TaskScheduler {
         let base = GetModuleHandleA(PCSTR(ptr::null())).unwrap().0;
         let view = PeView::module(base as _);
 
@@ -49,33 +49,39 @@ impl TaskScheduler {
         let get_task_scheduler: extern "cdecl" fn() -> *const usize = mem::transmute(address);
         log::trace!("TaskScheduler @ {:#08X?}", get_task_scheduler() as usize);
 
-        NonNull::<TaskScheduler>::new((get_task_scheduler()) as *mut _).unwrap()
+        NonNull::<TaskScheduler>::new((get_task_scheduler()) as *mut _)
+            .unwrap()
+            .as_ref()
     }
 
-    pub unsafe fn get_jobs_info(&self) -> Vec<NonNull<TaskSchedulerJob>> {
+    pub unsafe fn get_jobs_info(&self) -> Vec<&'static TaskSchedulerJob> {
         let mut jobs = Vec::new();
 
         let mut job =
             *(ptr::from_ref(self).byte_offset(task_scheduler::JOBS) as *const *const usize);
-        let end =
+        let end_job =
             *(ptr::from_ref(self).byte_offset(task_scheduler::JOBS + 0x04) as *const *const usize);
 
-        log::trace!("Job @ {:#08X?}", job.addr());
-        log::trace!("End @ {:#08X?}", end.addr());
+        log::trace!("job @ {:#08X?}", job.addr());
+        log::trace!("job_end @ {:#08X?}", end_job.addr());
 
-        while job != end {
-            jobs.push(NonNull::<TaskSchedulerJob>::new(*job as *mut _).unwrap());
+        while job != end_job {
+            jobs.push(
+                NonNull::<TaskSchedulerJob>::new(*job as *mut _)
+                    .unwrap()
+                    .as_ref(),
+            );
             job = job.byte_offset(0x08);
         }
 
         jobs
     }
 
-    pub unsafe fn get_jobs_by_name(&self, job_name: &str) -> Option<NonNull<TaskSchedulerJob>> {
+    pub unsafe fn get_jobs_by_name(&self, job_name: &str) -> Option<&'static TaskSchedulerJob> {
         let jobs = self.get_jobs_info();
 
         for job in jobs {
-            let name = job.as_ref().get_name();
+            let name = job.get_name();
 
             if name == job_name {
                 return Some(job);
@@ -92,8 +98,8 @@ impl TaskScheduler {
         log::info!("Printing {} jobs...", count);
 
         for job in jobs {
-            let name = job.as_ref().get_name();
-            let address = job.addr();
+            let name = job.get_name();
+            let address = ptr::from_ref(job).addr();
 
             log::info!("{} @ {:#08X?}", name, address);
         }
