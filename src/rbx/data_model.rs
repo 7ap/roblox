@@ -1,7 +1,6 @@
 use std::ops::Deref;
 use std::ptr::NonNull;
 
-use super::constants::data_model;
 use super::instance::Instance;
 use super::task_scheduler::TaskScheduler;
 
@@ -24,8 +23,7 @@ impl DataModel {
             .get_jobs_by_name("Render")
             .unwrap()
             .as_ptr()
-            .byte_offset(data_model::OFFSET) as *const *const usize)
-            as *const usize)
+            .byte_offset(0x28) as *const *const usize) as *const usize)
             .byte_offset(0x04);
 
         log::trace!("DataModel @ {:#08X?}", data_model.addr());

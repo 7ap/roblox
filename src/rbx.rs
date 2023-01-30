@@ -1,13 +1,4 @@
 mod constants {
-    /// `DataModel`
-    pub mod data_model {
-        /// Offset of `Render` containing a `DataModel` pointer.
-        pub static OFFSET: isize = 0x28;
-    }
-
-    // `Instance`
-    pub mod instance {}
-
     /// `TaskScheduler`
     pub mod task_scheduler {
         /// Pattern of the `TaskScheduler::get` function.

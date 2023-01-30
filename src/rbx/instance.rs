@@ -16,6 +16,10 @@ pub struct Instance {
 }
 
 impl Instance {
+    pub unsafe fn get_descriptor(&self) -> String {
+        todo!()
+    }
+
     pub unsafe fn get_name(&self) -> String {
         utilities::read_string(self.name)
     }
@@ -33,5 +37,9 @@ impl Instance {
         }
 
         children
+    }
+
+    pub unsafe fn get_parent(&self) -> NonNull<Instance> {
+        NonNull::<Instance>::new(self.parent as *mut _).unwrap()
     }
 }
