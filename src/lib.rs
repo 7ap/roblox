@@ -17,7 +17,7 @@ use windows::Win32::System::LibraryLoader::*;
 use windows::Win32::UI::Input::KeyboardAndMouse::*;
 
 use crate::rbx::instance::DataModel;
-use crate::rbx::TaskScheduler;
+use crate::rbx::task_scheduler::TaskScheduler;
 
 unsafe fn main() -> Result<()> {
     let start_time = Instant::now();

@@ -1,8 +1,7 @@
-pub mod data_model;
+mod data_model;
+pub use data_model::DataModel;
 
 use crate::utilities;
-
-pub use data_model::DataModel;
 
 #[repr(C)]
 pub struct Instance {
