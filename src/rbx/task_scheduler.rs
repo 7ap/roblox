@@ -8,10 +8,8 @@ use windows::core::*;
 use windows::Win32::System::LibraryLoader::*;
 
 use super::constants::task_scheduler;
-use crate::utilities;
 
 #[repr(C)]
-#[derive(Clone, Copy, Debug)]
 pub struct TaskSchedulerJob {
     vtable: *const usize,  // 0x0000
     this: *const Self,     // 0x0004
@@ -20,14 +18,22 @@ pub struct TaskSchedulerJob {
 }
 
 impl TaskSchedulerJob {
-    // TODO: Remove this. This is ugly.
     pub unsafe fn get_name(&self) -> String {
-        utilities::read_string(ptr::addr_of!(self.name))
+        let name = ptr::addr_of!(self.name);
+
+        if *(name.byte_offset(0x10) as *const usize) < 16 {
+            return CStr::from_ptr(name as *const c_char)
+                .to_string_lossy()
+                .to_string();
+        }
+
+        CStr::from_ptr(*(name as *const *const c_char))
+            .to_string_lossy()
+            .to_string()
     }
 }
 
 #[repr(C)]
-#[derive(Clone, Copy, Debug)]
 pub struct TaskScheduler; // TODO: Reconstruct
 
 impl TaskScheduler {

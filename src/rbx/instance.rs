@@ -1,7 +1,8 @@
 mod data_model;
-pub use data_model::DataModel;
 
-use crate::utilities;
+use std::ffi::*;
+
+pub use data_model::DataModel;
 
 #[repr(C)]
 pub struct Instance {
@@ -22,7 +23,15 @@ impl Instance {
     }
 
     pub unsafe fn get_name(&self) -> String {
-        utilities::read_string(self.name)
+        if *(self.name.byte_offset(0x10) as *const usize) < 16 {
+            return CStr::from_ptr(self.name as *const c_char)
+                .to_string_lossy()
+                .to_string();
+        }
+
+        CStr::from_ptr(*(self.name as *const *const c_char))
+            .to_string_lossy()
+            .to_string()
     }
 
     pub unsafe fn get_children(&self) -> Vec<&'static Instance> {

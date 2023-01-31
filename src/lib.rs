@@ -2,14 +2,11 @@
 #![feature(ptr_from_ref)]
 #![feature(pointer_byte_offsets)]
 
-mod hooks;
-mod logger;
-mod overlay;
+mod console;
 mod rbx;
-mod utilities;
 
 use std::thread;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use anyhow::Result;
 use windows::Win32::Foundation::*;
@@ -20,12 +17,9 @@ use crate::rbx::instance::DataModel;
 use crate::rbx::task_scheduler::TaskScheduler;
 
 unsafe fn main() -> Result<()> {
-    let start_time = Instant::now();
+    console::attach();
 
-    logger::init()?;
-    hooks::create()?;
-
-    log::info!("Initialized in {}ms.", start_time.elapsed().as_millis());
+    log::info!("Hello, world!");
 
     let task_scheduler = TaskScheduler::get();
     let data_model = DataModel::get();
@@ -40,7 +34,7 @@ unsafe fn main() -> Result<()> {
         thread::sleep(Duration::from_millis(50));
     }
 
-    hooks::restore()?;
+    console::detach();
 
     Ok(())
 }

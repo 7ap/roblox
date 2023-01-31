@@ -1,6 +1,6 @@
 use std::ffi::*;
 
-use anyhow::Result;
+use log::{Level, LevelFilter, Log, Metadata, Record};
 
 // TODO: Use the windows crate instead of this.
 #[link(name = "kernel32")]
@@ -13,10 +13,13 @@ extern "system" {
         flNewProtect: u32,
         lpflOldProtect: *mut u32,
     ) -> bool;
-    fn SetConsoleTitleA(lpConsoleTitle: *const u8) -> bool;
 }
 
-pub unsafe fn create() -> Result<()> {
+struct Logger;
+
+static LOGGER: Logger = Logger;
+
+pub unsafe fn attach() {
     let free_console: *const extern "system" fn() -> bool = FreeConsole as _;
 
     let mut old: u32 = 0;
@@ -26,12 +29,10 @@ pub unsafe fn create() -> Result<()> {
     VirtualProtect(free_console as *const _ as *mut c_void, 1, old, &mut old);
 
     AllocConsole();
-    SetConsoleTitleA(b"Console\0".as_ptr());
-
-    Ok(())
+    init_logger();
 }
 
-pub unsafe fn restore() -> Result<()> {
+pub unsafe fn detach() {
     let free_console: *const extern "system" fn() -> bool = FreeConsole as _;
 
     let mut old: u32 = 0;
@@ -40,8 +41,37 @@ pub unsafe fn restore() -> Result<()> {
     *(free_console as *const _ as *mut u8) = 0xFF; // Restore the first byte of `FreeConsole` with a `CALL` instruction.
     VirtualProtect(free_console as *const _ as *mut c_void, 1, old, &mut old);
 
-    // We're back to normal!
     FreeConsole();
+}
 
-    Ok(())
+fn init_logger() {
+    log::set_logger(&LOGGER).unwrap();
+
+    if cfg!(debug_assertions) {
+        log::set_max_level(LevelFilter::Debug);
+    } else {
+        log::set_max_level(LevelFilter::Info);
+    }
+}
+
+impl Log for Logger {
+    fn enabled(&self, _metadata: &Metadata) -> bool {
+        true
+    }
+
+    fn log(&self, record: &Record) {
+        if self.enabled(record.metadata()) {
+            let message = record.args();
+
+            match record.level() {
+                Level::Error => println!("[error] {}", message),
+                Level::Warn => println!("[warn] {}", message),
+                Level::Info => println!("[info] {}", message),
+                Level::Debug => println!("[debug] {}", message),
+                Level::Trace => println!("[trace] {}", message),
+            }
+        }
+    }
+
+    fn flush(&self) {}
 }
