@@ -1,6 +1,6 @@
 use std::ffi::*;
 use std::mem;
-use std::ptr::{self, NonNull};
+use std::ptr;
 
 use pelite::pattern;
 use pelite::pe::{Pe, PeView};
@@ -49,9 +49,9 @@ impl TaskScheduler {
         let get_task_scheduler: extern "cdecl" fn() -> *const usize = mem::transmute(address);
         log::trace!("TaskScheduler @ {:#08X?}", get_task_scheduler() as usize);
 
-        NonNull::<TaskScheduler>::new((get_task_scheduler()) as *mut _)
-            .unwrap()
-            .as_ref()
+        let task_scheduler = get_task_scheduler();
+
+        &*(task_scheduler as *mut Self)
     }
 
     pub unsafe fn get_jobs_info(&self) -> Vec<&'static TaskSchedulerJob> {
@@ -66,11 +66,7 @@ impl TaskScheduler {
         log::trace!("job_end @ {:#08X?}", end_job.addr());
 
         while job != end_job {
-            jobs.push(
-                NonNull::<TaskSchedulerJob>::new(*job as *mut _)
-                    .unwrap()
-                    .as_ref(),
-            );
+            jobs.push(&*(*job as *mut TaskSchedulerJob));
             job = job.byte_offset(0x08);
         }
 
@@ -92,18 +88,11 @@ impl TaskScheduler {
     }
 
     pub unsafe fn print_jobs(&self) {
-        let jobs = self.get_jobs_info();
-        let count = jobs.len();
-
-        log::info!("Printing {} jobs...", count);
-
-        for job in jobs {
+        for job in self.get_jobs_info().iter() {
             let name = job.get_name();
             let address = ptr::from_ref(job).addr();
 
             log::info!("{} @ {:#08X?}", name, address);
         }
-
-        log::info!("Printed {} jobs.", count);
     }
 }

@@ -8,7 +8,6 @@ mod overlay;
 mod rbx;
 mod utilities;
 
-use std::ptr;
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -17,8 +16,8 @@ use windows::Win32::Foundation::*;
 use windows::Win32::System::LibraryLoader::*;
 use windows::Win32::UI::Input::KeyboardAndMouse::*;
 
-use crate::rbx::data_model::DataModel;
-use crate::rbx::task_scheduler::TaskScheduler;
+use crate::rbx::instance::DataModel;
+use crate::rbx::TaskScheduler;
 
 unsafe fn main() -> Result<()> {
     let start_time = Instant::now();
@@ -34,9 +33,7 @@ unsafe fn main() -> Result<()> {
     task_scheduler.print_jobs();
 
     for child in data_model.get_children().iter() {
-        let name = child.as_ref().get_name();
-
-        log::info!("{} @ {:#08X?}", name, child.addr());
+        log::info!("{} @ {:#08X?}", child.get_name(), child.this.addr());
     }
 
     while !GetAsyncKeyState(VK_END.0.into()) & 0x01 == 0x01 {

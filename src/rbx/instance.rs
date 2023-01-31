@@ -1,6 +1,8 @@
-use std::ptr::NonNull;
+pub mod data_model;
 
 use crate::utilities;
+
+pub use data_model::DataModel;
 
 #[repr(C)]
 pub struct Instance {
@@ -12,7 +14,7 @@ pub struct Instance {
     pub name: *const usize,       // 0x0024
     pub children: *const usize,   // 0x0028
     _pad2: [usize; 1],            // 0x002C
-    pub parent: *const Self,      // 0x0030
+    pub parent: *const Instance,  // 0x0030
 }
 
 impl Instance {
@@ -24,22 +26,21 @@ impl Instance {
         utilities::read_string(self.name)
     }
 
-    pub unsafe fn get_children(&self) -> Vec<NonNull<Instance>> {
+    pub unsafe fn get_children(&self) -> Vec<&'static Instance> {
         let mut children = Vec::new();
 
-        // Define bounds of the children vector
         let mut child = *(self.children as *const *const usize);
         let end_child = *(self.children.byte_offset(0x04) as *const *const usize);
 
         while child != end_child {
-            children.push(NonNull::<Instance>::new(*child as *mut _).unwrap());
+            children.push(&*(*child as *mut Instance));
             child = child.byte_offset(0x08);
         }
 
         children
     }
 
-    pub unsafe fn get_parent(&self) -> NonNull<Instance> {
-        NonNull::<Instance>::new(self.parent as *mut _).unwrap()
+    pub unsafe fn get_parent(&self) -> &'static Instance {
+        &*(self.parent as *mut Instance)
     }
 }

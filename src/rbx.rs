@@ -1,3 +1,4 @@
+// TODO: Remove this.
 mod constants {
     /// `TaskScheduler`
     pub mod task_scheduler {
@@ -9,6 +10,7 @@ mod constants {
     }
 }
 
-pub mod data_model;
 pub mod instance;
 pub mod task_scheduler;
+
+pub use task_scheduler::{TaskScheduler, TaskSchedulerJob};
