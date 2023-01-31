@@ -1,6 +1,7 @@
 mod data_model;
 
 use std::ffi::*;
+use std::ptr::NonNull;
 
 pub use data_model::DataModel;
 
@@ -34,14 +35,18 @@ impl Instance {
             .to_string()
     }
 
-    pub unsafe fn get_children(&self) -> Vec<&'static Instance> {
+    pub unsafe fn get_children(&self) -> Vec<&'static mut Instance> {
         let mut children = Vec::new();
 
         let mut child = *(self.children as *const *const usize);
         let end_child = *(self.children.byte_offset(0x04) as *const *const usize);
 
         while child != end_child {
-            children.push(&*(*child as *mut Instance));
+            let current_child = NonNull::<Instance>::new(*child as *mut _)
+                .expect("`Instance` is a null pointer")
+                .as_mut();
+
+            children.push(current_child);
             child = child.byte_offset(0x08);
         }
 

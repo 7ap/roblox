@@ -1,13 +1,13 @@
 use std::ffi::*;
 use std::mem;
-use std::ptr;
+use std::ptr::{self, NonNull};
 
 use pelite::pattern;
 use pelite::pe::{Pe, PeView};
 use windows::core::*;
 use windows::Win32::System::LibraryLoader::*;
 
-use super::constants::task_scheduler;
+static GET_TASK_SCHEDULER: &str = "55 8B EC 64 A1 00 00 00 00 6A FF 68 ? ? ? ? 50 64 89 25 00 00 00 00 83 EC 14 64 A1 2C 00 00 00 8B 08 A1 ? ? ? ? 3B 81 08 00 00 00 7F 29 A1 ? ? ? ? 8B 4D F4 64 89 0D 00 00 00 00 8B E5 5D C3 8D 4D E4 E8 ? ? ? ? 68 ? ? ? ? 8D 45 E4 50 E8 ? ? ? ? 68 ? ? ? ? E8 ? ? ? ? 83 C4 04 83 3D ? ? ? ? ? 75 C1 68";
 
 #[repr(C)]
 pub struct TaskSchedulerJob {
@@ -42,7 +42,7 @@ impl TaskScheduler {
         let view = PeView::module(base as _);
 
         let scanner = view.scanner();
-        let pattern = pattern::parse(task_scheduler::GET_TASK_SCHEDULER).unwrap();
+        let pattern = pattern::parse(GET_TASK_SCHEDULER).unwrap();
 
         let mut save = [0; 8];
         if !scanner.finds_code(&pattern, &mut save) {
@@ -50,29 +50,25 @@ impl TaskScheduler {
         }
 
         let address = base as usize + save[0] as usize;
-        log::trace!("TaskScheduler::get @ {:#08X?}", address);
-
         let get_task_scheduler: extern "cdecl" fn() -> *const usize = mem::transmute(address);
-        log::trace!("TaskScheduler @ {:#08X?}", get_task_scheduler() as usize);
 
-        let task_scheduler = get_task_scheduler();
-
-        &*(task_scheduler as *mut Self)
+        NonNull::<TaskScheduler>::new(get_task_scheduler() as *mut _)
+            .expect("`TaskScheduler` is a null pointer")
+            .as_mut()
     }
 
-    pub unsafe fn get_jobs_info(&self) -> Vec<&'static TaskSchedulerJob> {
+    pub unsafe fn get_jobs_info(&self) -> Vec<&'static mut TaskSchedulerJob> {
         let mut jobs = Vec::new();
 
-        let mut job =
-            *(ptr::from_ref(self).byte_offset(task_scheduler::JOBS) as *const *const usize);
-        let end_job =
-            *(ptr::from_ref(self).byte_offset(task_scheduler::JOBS + 0x04) as *const *const usize);
-
-        log::trace!("job @ {:#08X?}", job.addr());
-        log::trace!("job_end @ {:#08X?}", end_job.addr());
+        let mut job = *(ptr::from_ref(self).byte_offset(0x134) as *const *const usize);
+        let end_job = *(ptr::from_ref(self).byte_offset(0x134 + 0x04) as *const *const usize);
 
         while job != end_job {
-            jobs.push(&*(*job as *mut TaskSchedulerJob));
+            let current_job = NonNull::<TaskSchedulerJob>::new(*job as *mut _)
+                .expect("`TaskSchedulerJob` is a null pointer")
+                .as_mut();
+
+            jobs.push(current_job);
             job = job.byte_offset(0x08);
         }
 
@@ -95,10 +91,7 @@ impl TaskScheduler {
 
     pub unsafe fn print_jobs(&self) {
         for job in self.get_jobs_info().iter() {
-            let name = job.get_name();
-            let address = ptr::from_ref(job).addr();
-
-            log::info!("{} @ {:#08X?}", name, address);
+            log::info!("{} @ {:p}", job.get_name(), ptr::from_ref(job));
         }
     }
 }
