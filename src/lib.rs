@@ -6,12 +6,10 @@ mod console;
 mod rbx;
 
 use std::thread;
-use std::time::Duration;
 
 use anyhow::Result;
 use windows::Win32::Foundation::*;
 use windows::Win32::System::LibraryLoader::*;
-use windows::Win32::UI::Input::KeyboardAndMouse::*;
 
 use crate::rbx::instance::DataModel;
 use crate::rbx::task_scheduler::TaskScheduler;
@@ -21,17 +19,31 @@ unsafe fn main() -> Result<()> {
 
     log::info!("Hello, world!");
 
-    let task_scheduler = TaskScheduler::get();
-    let data_model = DataModel::get();
+    loop {
+        let input = console::input("> ");
+        let input = input.trim();
 
-    task_scheduler.print_jobs();
+        if input.is_empty() {
+            continue;
+        }
 
-    for child in data_model.get_children().iter() {
-        log::info!("{} @ {:#08X?}", child.get_name(), child.this.addr());
-    }
-
-    while !GetAsyncKeyState(VK_END.0.into()) & 0x01 == 0x01 {
-        thread::sleep(Duration::from_millis(50));
+        let command: Vec<&str> = input.split_whitespace().collect();
+        match command[0].to_lowercase().as_str() {
+            "print_jobs" => {
+                TaskScheduler::get().print_jobs();
+            }
+            "print_datamodel" => {
+                for child in DataModel::get().get_children().iter() {
+                    log::info!("{} @ {:#08X?}", child.get_name(), child.this.addr());
+                }
+            }
+            "exit" => {
+                break;
+            }
+            _ => {
+                log::error!("\"{}\" is an invalid command.", command[0]);
+            }
+        }
     }
 
     console::detach();

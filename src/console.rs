@@ -1,4 +1,5 @@
 use std::ffi::*;
+use std::io::prelude::*;
 
 use log::{Level, LevelFilter, Log, Metadata, Record};
 
@@ -42,6 +43,26 @@ pub unsafe fn detach() {
     VirtualProtect(free_console as *const _ as *mut c_void, 1, old, &mut old);
 
     FreeConsole();
+}
+
+pub fn input(prompt: &str) -> String {
+    let mut input = String::new();
+
+    write!(std::io::stdout(), "{}", prompt)
+        .map_err(|e| e.to_string())
+        .unwrap();
+
+    std::io::stdout()
+        .flush()
+        .map_err(|e| e.to_string())
+        .unwrap();
+
+    std::io::stdin()
+        .read_line(&mut input)
+        .map_err(|e| e.to_string())
+        .unwrap();
+
+    input
 }
 
 fn init_logger() {
