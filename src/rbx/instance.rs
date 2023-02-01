@@ -15,7 +15,7 @@ pub struct Instance {
     pub name: *const usize,       // 0x0024
     pub children: *const usize,   // 0x0028
     _pad2: [usize; 1],            // 0x002C
-    pub parent: *const Instance,  // 0x0030
+    pub parent: *mut Instance,    // 0x0030
 }
 
 impl Instance {
@@ -80,6 +80,22 @@ impl Instance {
         }
 
         None
+    }
+
+    // TODO: Optimize this.
+    pub unsafe fn get_full_name(&self) -> String {
+        let mut parent = self.parent;
+        let mut string = self.get_name();
+
+        while !parent.is_null() {
+            let current_parent = &*parent;
+
+            string = format!("{}.", current_parent.get_name()) + &string;
+
+            parent = current_parent.parent;
+        }
+
+        string
     }
 
     pub unsafe fn get_parent(&self) -> &'static Instance {

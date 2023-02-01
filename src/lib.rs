@@ -60,7 +60,7 @@ unsafe fn main() -> Result<()> {
                 };
 
                 for descendant in instance.get_descendants().unwrap().iter() {
-                    log::info!("{} @ {:p}", descendant.get_name(), descendant.this);
+                    log::info!("{} @ {:p}", descendant.get_full_name(), descendant.this);
                 }
             }
             "exit" => {
