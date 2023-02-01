@@ -1,9 +1,13 @@
-mod data_model;
+/* ---------------------------------------------------------------- */
 
-use std::ffi::*;
-use std::ptr::{self, NonNull};
+pub mod data_model;
 
 pub use data_model::DataModel;
+
+/* ---------------------------------------------------------------- */
+
+use std::ffi::*;
+use std::ptr::NonNull;
 
 #[repr(C)]
 pub struct Instance {

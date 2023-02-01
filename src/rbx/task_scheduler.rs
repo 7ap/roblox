@@ -1,4 +1,3 @@
-use std::ffi::*;
 use std::mem;
 use std::ptr::{self, NonNull};
 
@@ -7,31 +6,9 @@ use pelite::pe::{Pe, PeView};
 use windows::core::*;
 use windows::Win32::System::LibraryLoader::*;
 
+use crate::rbx::TaskSchedulerJob;
+
 static GET_TASK_SCHEDULER: &str = "55 8B EC 64 A1 00 00 00 00 6A FF 68 ? ? ? ? 50 64 89 25 00 00 00 00 83 EC 14 64 A1 2C 00 00 00 8B 08 A1 ? ? ? ? 3B 81 08 00 00 00 7F 29 A1 ? ? ? ? 8B 4D F4 64 89 0D 00 00 00 00 8B E5 5D C3 8D 4D E4 E8 ? ? ? ? 68 ? ? ? ? 8D 45 E4 50 E8 ? ? ? ? 68 ? ? ? ? E8 ? ? ? ? 83 C4 04 83 3D ? ? ? ? ? 75 C1 68";
-
-#[repr(C)]
-pub struct TaskSchedulerJob {
-    vtable: *const usize,  // 0x0000
-    this: *const Self,     // 0x0004
-    _pad0: [c_char; 0x08], // 0x0008..0x000C
-    name: usize,           // 0x0010
-}
-
-impl TaskSchedulerJob {
-    pub unsafe fn get_name(&self) -> String {
-        let name = ptr::addr_of!(self.name);
-
-        if *(name.byte_offset(0x10) as *const usize) < 16 {
-            return CStr::from_ptr(name as *const c_char)
-                .to_string_lossy()
-                .to_string();
-        }
-
-        CStr::from_ptr(*(name as *const *const c_char))
-            .to_string_lossy()
-            .to_string()
-    }
-}
 
 #[repr(C)]
 pub struct TaskScheduler; // TODO: Reconstruct

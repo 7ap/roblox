@@ -12,8 +12,8 @@ use anyhow::Result;
 use windows::Win32::Foundation::*;
 use windows::Win32::System::LibraryLoader::*;
 
-use crate::rbx::instance::{DataModel, Instance};
-use crate::rbx::task_scheduler::TaskScheduler;
+use rbx::instance::{DataModel, Instance};
+use rbx::TaskScheduler;
 
 unsafe fn main() -> Result<()> {
     console::attach();

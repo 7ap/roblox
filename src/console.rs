@@ -2,11 +2,12 @@ use std::ffi::*;
 use std::io::prelude::*;
 
 use log::{Level, LevelFilter, Log, Metadata, Record};
+use windows::core::*;
+use windows::Win32::System::Console::*;
 
 // TODO: Use the windows crate instead of this.
 #[link(name = "kernel32")]
 extern "system" {
-    fn AllocConsole() -> bool;
     fn FreeConsole() -> bool;
     fn VirtualProtect(
         lpAddress: *mut c_void,
@@ -30,6 +31,7 @@ pub unsafe fn attach() {
     VirtualProtect(free_console as *const _ as *mut c_void, 1, old, &mut old);
 
     AllocConsole();
+    SetConsoleTitleA(PCSTR("https://github.com/7ap/roblox".as_ptr()));
     init_logger();
 }
 

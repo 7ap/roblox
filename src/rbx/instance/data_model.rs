@@ -1,7 +1,7 @@
 use std::ops::Deref;
 use std::ptr;
 
-use crate::rbx::task_scheduler::TaskScheduler;
+use crate::rbx::TaskScheduler;
 
 use super::Instance;
 
