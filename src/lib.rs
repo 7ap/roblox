@@ -44,8 +44,23 @@ unsafe fn main() -> Result<()> {
                     DataModel::get()
                 };
 
-                for child in instance.get_children().iter() {
+                for child in instance.get_children().unwrap().iter() {
                     log::info!("{} @ {:p}", child.get_name(), child.this);
+                }
+            }
+            "get_descendants" => {
+                let instance = if command.len() > 1 {
+                    let instance = command[1].trim_start_matches("0x");
+                    let instance = usize::from_str_radix(instance, 16);
+                    let instance = instance.unwrap() as *mut Instance;
+
+                    &*instance
+                } else {
+                    DataModel::get()
+                };
+
+                for descendant in instance.get_descendants().unwrap().iter() {
+                    log::info!("{} @ {:p}", descendant.get_name(), descendant.this);
                 }
             }
             "exit" => {

@@ -1,14 +1,14 @@
 mod data_model;
 
 use std::ffi::*;
-use std::ptr::NonNull;
+use std::ptr::{self, NonNull};
 
 pub use data_model::DataModel;
 
 #[repr(C)]
 pub struct Instance {
     pub vtable: *const usize,     // 0x0000
-    pub this: *const Self,        // 0x0004
+    pub this: *mut Self,          // 0x0004
     _pad0: [usize; 2],            // 0x0008..0x000C
     pub descriptor: *const usize, // 0x0010
     _pad1: [usize; 4],            // 0x0014..0x0020
@@ -35,8 +35,12 @@ impl Instance {
             .to_string()
     }
 
-    pub unsafe fn get_children(&self) -> Vec<&'static mut Instance> {
+    pub unsafe fn get_children(&self) -> Option<Vec<&'static mut Instance>> {
         let mut children = Vec::new();
+
+        if self.children.is_null() {
+            return None;
+        }
 
         let mut child = *(self.children as *const *const usize);
         let end_child = *(self.children.byte_offset(0x04) as *const *const usize);
@@ -50,7 +54,32 @@ impl Instance {
             child = child.byte_offset(0x08);
         }
 
-        children
+        Some(children)
+    }
+
+    // TODO: Actually figure out a sane way to do this.
+    pub unsafe fn get_descendants(&self) -> Option<Vec<&'static mut Instance>> {
+        if let Some(children) = self.get_children() {
+            let mut descendants = Vec::new();
+
+            for child in children.iter() {
+                descendants.push(
+                    NonNull::<Instance>::new(child.this)
+                        .expect("`Instance` is a null pointer")
+                        .as_mut(),
+                );
+
+                if child.get_descendants().is_none() {
+                    continue;
+                }
+
+                descendants.append(&mut child.get_descendants().unwrap());
+            }
+
+            return Some(descendants);
+        }
+
+        None
     }
 
     pub unsafe fn get_parent(&self) -> &'static Instance {
