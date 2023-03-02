@@ -7,7 +7,7 @@ use windows::core::*;
 use windows::Win32::System::LibraryLoader::*;
 
 #[repr(C)]
-pub struct TaskScheduler {}
+pub struct TaskScheduler;
 
 impl TaskScheduler {
     pub unsafe fn get() -> NonNull<TaskScheduler> {

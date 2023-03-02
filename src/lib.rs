@@ -23,6 +23,7 @@ async unsafe fn main() -> Result<()> {
     FreeConsole();
 
     hooks::detach()?;
+
     Ok(())
 }
 
