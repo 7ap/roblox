@@ -1,11 +1,22 @@
+mod hooks;
+
 use std::thread;
+use std::time::Duration;
 
 use anyhow::Result;
 use windows::Win32::Foundation::*;
+use windows::Win32::System::Console::*;
 use windows::Win32::System::LibraryLoader::*;
 
 #[tokio::main]
 async unsafe fn main() -> Result<()> {
+    hooks::attach()?;
+
+    AllocConsole();
+    println!("Hello, world!");
+    thread::sleep(Duration::from_secs(10));
+
+    hooks::detach()?;
     Ok(())
 }
 
