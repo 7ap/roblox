@@ -1,4 +1,6 @@
 #![feature(strict_provenance)]
+#![feature(pointer_byte_offsets)]
+#![feature(ptr_from_ref)]
 
 mod hooks;
 mod sdk;
@@ -16,13 +18,14 @@ use sdk::TaskScheduler;
 #[tokio::main]
 async unsafe fn main() -> Result<()> {
     hooks::attach()?;
-
     AllocConsole();
+
     println!("TaskScheduler @ {:p}", TaskScheduler::get());
-    thread::sleep(Duration::from_secs(10));
-    FreeConsole();
+    TaskScheduler::get().as_ref().print_jobs();
+    thread::sleep(Duration::from_secs(15)); // TODO: Hold thread until `END` is pressed.
 
     hooks::detach()?;
+    FreeConsole();
 
     Ok(())
 }
