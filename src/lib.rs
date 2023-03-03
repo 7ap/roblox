@@ -13,7 +13,7 @@ use windows::Win32::Foundation::*;
 use windows::Win32::System::Console::*;
 use windows::Win32::System::LibraryLoader::*;
 
-use sdk::TaskScheduler;
+use sdk::base::*;
 
 #[tokio::main]
 async unsafe fn main() -> Result<()> {
