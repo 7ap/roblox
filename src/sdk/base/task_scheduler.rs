@@ -7,8 +7,8 @@ use pelite::pe::{Pe, PeView};
 use windows::core::*;
 use windows::Win32::System::LibraryLoader::*;
 
-use crate::sdk;
 use crate::sdk::base::TaskSchedulerJob;
+use crate::utilities;
 
 #[repr(C)]
 pub struct TaskScheduler {
@@ -58,7 +58,7 @@ impl TaskScheduler {
         let jobs = self.get_jobs_info();
 
         for job in jobs {
-            if sdk::read_string(ptr::addr_of!(job.as_ref().name)) == name {
+            if utilities::read_string(ptr::addr_of!(job.as_ref().name)) == name {
                 return Some(job);
             }
         }
@@ -72,7 +72,7 @@ impl TaskScheduler {
         for job in jobs {
             println!(
                 "TaskScheduler::Job::{}, state: {}, seconds spend in job: {}", // the typo is for realism™
-                sdk::read_string(ptr::addr_of!(job.as_ref().name)), // TODO: Fix `sdk::read_string` to accept `job.as_ref().name`. I don't like `ptr::addr_of!`.
+                utilities::read_string(ptr::addr_of!(job.as_ref().name)), // TODO: Fix `sdk::read_string` to accept `job.as_ref().name`. I don't like `ptr::addr_of!`.
                 "TODO", // TODO: Find `state`, shouldn't take very long but it's 00:17 and I want to commit something.
                 job.as_ref().step_start_time, // TODO: Figure out if this offset is correct (looks right?). See above comment.
             );
