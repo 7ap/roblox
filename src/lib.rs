@@ -1,6 +1,5 @@
 #![feature(strict_provenance)]
 #![feature(pointer_byte_offsets)]
-#![feature(ptr_from_ref)]
 
 mod hooks;
 mod sdk;
@@ -9,23 +8,34 @@ use std::thread;
 use std::time::Duration;
 
 use anyhow::Result;
+use env_logger::Env;
 use windows::Win32::Foundation::*;
 use windows::Win32::System::Console::*;
 use windows::Win32::System::LibraryLoader::*;
+use windows::Win32::UI::Input::KeyboardAndMouse::*;
 
-use sdk::base::*;
+#[tokio::main(flavor = "current_thread")]
+async fn main() -> Result<()> {
+    use crate::hooks::Hooks;
+    use crate::sdk::base::*;
 
-#[tokio::main]
-async unsafe fn main() -> Result<()> {
-    hooks::attach()?;
-    AllocConsole();
+    env_logger::init_from_env(Env::default().default_filter_or("INFO"));
+    unsafe { AllocConsole() };
+    let hooks = Hooks::new();
 
-    println!("TaskScheduler @ {:p}", TaskScheduler::get());
-    TaskScheduler::get().as_ref().print_jobs();
-    thread::sleep(Duration::from_secs(15)); // TODO: Hold thread until `END` is pressed.
+    hooks.enable().expect("hooks should be enabled");
 
-    hooks::detach()?;
-    FreeConsole();
+    while unsafe { !GetAsyncKeyState(VK_END.0 as i32) & 0x01 } == 0x01 {
+        if unsafe { GetAsyncKeyState(VK_G.0 as i32) & 0x01 } == 0x01 {
+            let task_scheduler = TaskScheduler::get();
+            log::info!("TaskScheduler @ {:p}", task_scheduler);
+        }
+
+        thread::sleep(Duration::from_millis(50));
+    }
+
+    hooks.disable().expect("hooks should be disabled");
+    unsafe { FreeConsole() };
 
     Ok(())
 }

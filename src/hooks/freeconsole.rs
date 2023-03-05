@@ -2,6 +2,7 @@ use std::mem;
 
 use anyhow::Result;
 use retour::static_detour;
+use retour::StaticDetour;
 
 #[link(name = "kernel32")]
 extern "system" {
@@ -12,21 +13,13 @@ static_detour! {
     static FreeConsoleHook: unsafe extern "system" fn() -> bool;
 }
 
-type FnFreeConsole = unsafe extern "system" fn() -> bool;
-
 fn closure() -> bool {
     true
 }
 
-pub unsafe fn create() -> Result<()> {
-    let target: FnFreeConsole = mem::transmute(FreeConsole as *const extern "system" fn());
-    FreeConsoleHook.initialize(target, closure)?.enable()?;
+pub fn create() -> Result<&'static StaticDetour<unsafe extern "system" fn() -> bool>> {
+    let target = unsafe { mem::transmute(FreeConsole as *const extern "system" fn()) };
+    let detour = unsafe { FreeConsoleHook.initialize(target, closure)? };
 
-    Ok(())
-}
-
-pub unsafe fn destroy() -> Result<()> {
-    FreeConsoleHook.disable()?;
-
-    Ok(())
+    Ok(detour)
 }
