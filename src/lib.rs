@@ -26,7 +26,7 @@ async fn main() -> Result<()> {
     hooks.enable().expect("hooks should be enabled");
 
     while unsafe { !GetAsyncKeyState(VK_END.0 as i32) & 0x01 } == 0x01 {
-        if unsafe { GetAsyncKeyState(VK_G.0 as i32) & 0x01 } == 0x01 {
+        if unsafe { GetAsyncKeyState(VK_Z.0 as i32) & 0x01 } == 0x01 {
             let task_scheduler = TaskScheduler::get();
             log::info!("TaskScheduler @ {:p}", task_scheduler);
         }
