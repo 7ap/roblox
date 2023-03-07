@@ -19,7 +19,7 @@ async fn main() -> Result<()> {
     use crate::hooks::Hooks;
     use crate::sdk::base::*;
 
-    env_logger::init_from_env(Env::default().default_filter_or("INFO"));
+    env_logger::init_from_env(Env::default().default_filter_or("DEBUG"));
     unsafe { AllocConsole() };
     let hooks = Hooks::new();
 
@@ -27,8 +27,12 @@ async fn main() -> Result<()> {
 
     while unsafe { !GetAsyncKeyState(VK_END.0 as i32) & 0x01 } == 0x01 {
         if unsafe { GetAsyncKeyState(VK_Z.0 as i32) & 0x01 } == 0x01 {
-            let task_scheduler = TaskScheduler::get();
+            let task_scheduler = unsafe { &mut *TaskScheduler::get() };
             log::info!("TaskScheduler @ {:p}", task_scheduler);
+
+            for job in task_scheduler.get_jobs_info() {
+                log::info!("TaskSchedulerJob @ {:p}", job);
+            }
         }
 
         thread::sleep(Duration::from_millis(50));
