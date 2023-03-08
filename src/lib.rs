@@ -4,6 +4,8 @@
 mod hooks;
 mod sdk;
 
+use std::ffi::*;
+use std::mem;
 use std::thread;
 use std::time::Duration;
 
@@ -27,11 +29,25 @@ async fn main() -> Result<()> {
 
     while unsafe { !GetAsyncKeyState(VK_END.0 as i32) & 0x01 } == 0x01 {
         if unsafe { GetAsyncKeyState(VK_Z.0 as i32) & 0x01 } == 0x01 {
-            let task_scheduler = unsafe { &mut *TaskScheduler::get() };
+            let task_scheduler = unsafe { &mut *TaskScheduler::get()? };
             log::info!("TaskScheduler @ {:p}", task_scheduler);
 
             for job in task_scheduler.get_jobs_info() {
-                log::info!("TaskSchedulerJob @ {:p}", job);
+                let job = unsafe { &mut *job };
+
+                // Atrocious hack. Find better solution at some point.
+                let size: [c_char; 4] = job.name[16..20].try_into()?;
+                let size: isize = unsafe { mem::transmute_copy(&size) };
+
+                let name = if size >= 16 {
+                    let string = job.name.as_ptr() as *const *const c_char;
+                    unsafe { CStr::from_ptr(*string) }
+                } else {
+                    let string = job.name.as_ptr() as *const c_char;
+                    unsafe { CStr::from_ptr(string) }
+                };
+
+                log::info!("TaskScheduler::Job::{} @ {:p}", name.to_str()?, job);
             }
         }
 
