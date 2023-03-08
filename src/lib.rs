@@ -19,6 +19,7 @@ use windows::Win32::UI::Input::KeyboardAndMouse::*;
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<()> {
     use crate::hooks::Hooks;
+    use crate::sdk::app::v8datamodel::*;
     use crate::sdk::base::*;
 
     env_logger::init_from_env(Env::default().default_filter_or("DEBUG"));
@@ -49,6 +50,9 @@ async fn main() -> Result<()> {
 
                 log::info!("TaskScheduler::Job::{} @ {:p}", name.to_str()?, job);
             }
+
+            let data_model = unsafe { &mut *DataModel::get()? };
+            log::info!("DataModel @ {:p}", data_model);
         }
 
         thread::sleep(Duration::from_millis(50));

@@ -12,10 +12,10 @@ use crate::sdk::base::*;
 
 #[repr(C)]
 pub struct TaskScheduler {
-    _pad0: [c_char; 0x134],                  // 0x000..0x134
-    all_jobs: [*mut usize; 2],               // 0x134..0x13C
-    _pad1: [c_char; 0x008],                  // 0x13C..0x144
-    currently_running_jobs: [*mut usize; 2], // 0x144..0x14C
+    _pad0: [c_char; 0x134],                      // 0x000..0x134
+    pub all_jobs: [*mut usize; 2],               // 0x134..0x13C
+    _pad1: [c_char; 0x008],                      // 0x13C..0x144
+    pub currently_running_jobs: [*mut usize; 2], // 0x144..0x14C
 }
 
 impl TaskScheduler {

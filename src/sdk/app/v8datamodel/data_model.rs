@@ -1,6 +1,9 @@
 use std::ops::Deref;
 
-use crate::sdk::app::v8tree::Instance;
+use anyhow::Result;
+
+use crate::sdk::app::v8tree::*;
+use crate::sdk::base::*;
 
 #[repr(C)]
 pub struct DataModel {
@@ -16,7 +19,14 @@ impl Deref for DataModel {
 }
 
 impl DataModel {
-    pub unsafe fn get() -> *mut Self {
-        todo!()
+    pub fn get() -> Result<*mut Self> {
+        let task_scheduler = unsafe { &mut *TaskScheduler::get()? };
+
+        let data_model = unsafe {
+            (&mut *(&mut *task_scheduler.get_jobs_by_name("Render")?).arbiter[0] as *mut usize)
+                .byte_offset(0x04) as *mut Self
+        };
+
+        Ok(data_model)
     }
 }
