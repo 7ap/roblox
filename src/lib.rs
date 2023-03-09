@@ -48,9 +48,11 @@ async fn main() -> Result<()> {
                     unsafe { CStr::from_ptr(string) }
                 };
 
-                log::info!("TaskScheduler::Job::{} @ {:p}", name.to_str()?, job);
+                log::info!("TaskSchedulerJob<{}> @ {:p}", name.to_str()?, job);
             }
+        }
 
+        if unsafe { GetAsyncKeyState(VK_X.0 as i32) & 0x01 } == 0x01 {
             let data_model = unsafe { &mut *DataModel::get()? };
             log::info!("DataModel @ {:p}", data_model);
         }

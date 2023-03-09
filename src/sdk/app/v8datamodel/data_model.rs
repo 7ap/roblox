@@ -7,14 +7,14 @@ use crate::sdk::base::*;
 
 #[repr(C)]
 pub struct DataModel {
-    _super: Instance,
+    _super0: Instance,
 }
 
 impl Deref for DataModel {
     type Target = Instance;
 
     fn deref(&self) -> &Self::Target {
-        &self._super
+        &self._super0
     }
 }
 
