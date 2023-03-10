@@ -1,6 +1,7 @@
 use std::ops::Deref;
 
 use crate::sdk::app::reflection::*;
+use crate::sdk::extras::*;
 
 #[repr(C)]
 pub struct ClassDescriptor {
@@ -23,7 +24,7 @@ impl Deref for ClassDescriptor {
 #[repr(C)]
 pub struct DescribedBase {
     _super0: EventSource,                 // 0x000..0x004
-    _super1: (*const Self, *mut usize),   // 0x004..0x00C
+    _super1: boost::SharedPtr<Self>,      // 0x004..0x00C
     pub descriptor: *mut ClassDescriptor, // 0x00C..0x010
-    pub xml_id: [usize; 2],               // 0x010..0x018
+    _todo_xml_id: [usize; 2],             // 0x010..0x018
 }
