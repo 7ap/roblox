@@ -6,6 +6,7 @@ mod sdk;
 
 use std::ffi::*;
 use std::mem;
+use std::ptr;
 use std::thread;
 use std::time::Duration;
 
@@ -55,6 +56,34 @@ async fn main() -> Result<()> {
         if unsafe { GetAsyncKeyState(VK_X.0 as i32) & 0x01 } == 0x01 {
             let data_model = unsafe { &mut *DataModel::get()? };
             log::info!("DataModel @ {:p}", data_model);
+
+            let class_descriptor = unsafe { &mut *data_model.descriptor };
+            log::info!("ClassDescriptor @ {:p}", class_descriptor);
+
+            log::info!(
+                "propertyDescriptors: {:p}",
+                ptr::addr_of!(class_descriptor.property_descriptors)
+            );
+
+            log::info!(
+                "eventDescriptors: {:p}",
+                ptr::addr_of!(class_descriptor.event_descriptors)
+            );
+
+            log::info!(
+                "functionDescriptors: {:p}",
+                ptr::addr_of!(class_descriptor.function_descriptors)
+            );
+
+            log::info!(
+                "yieldFunctionDescriptors: {:p}",
+                ptr::addr_of!(class_descriptor.yield_function_descriptors)
+            );
+
+            log::info!(
+                "callbackDescriptors: {:p}",
+                ptr::addr_of!(class_descriptor.callback_descriptors)
+            );
         }
 
         thread::sleep(Duration::from_millis(50));

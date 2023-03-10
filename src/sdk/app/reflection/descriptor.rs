@@ -1,6 +1,14 @@
 use std::ffi::*;
 
 #[repr(C)]
+pub struct Attributes {
+    _pad0: [c_char; 0x008],
+}
+
+#[repr(C)]
 pub struct Descriptor {
-    _pad0: [c_char; 0x018], // 0x000..0x018
+    pub vtable: *const usize,           // 0x000..0x004
+    pub name: *const c_char,            // 0x004..0x008
+    pub attributes: Attributes,         // 0x008..0x010
+    pub todo_counter_index: [usize; 2], // 0x010..0x014
 }
