@@ -24,5 +24,5 @@ pub struct MemberDescriptorContainer {
     pub descriptor_lookup: DenseHashMap<*const c_char, *mut MemberDescriptor>, // 0x00C..0x024
     pub derived_containers: cxx::Vector<*mut MemberDescriptorContainer>, // 0x024..0x030
     pub base: *const MemberDescriptorContainer,          // 0x030..0x034
-    _todo_descriptor_added_callback: [c_char; 40],       // 0x034..0x05C
+    pub descriptor_added_callback: boost::FunctionBase,  // 0x034..0x05C
 }

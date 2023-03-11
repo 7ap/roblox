@@ -60,30 +60,8 @@ async fn main() -> Result<()> {
             let class_descriptor = unsafe { &mut *data_model.descriptor };
             log::info!("ClassDescriptor @ {:p}", class_descriptor);
 
-            log::info!(
-                "propertyDescriptors: {:p}",
-                ptr::addr_of!(class_descriptor.property_descriptors)
-            );
-
-            log::info!(
-                "eventDescriptors: {:p}",
-                ptr::addr_of!(class_descriptor.event_descriptors)
-            );
-
-            log::info!(
-                "functionDescriptors: {:p}",
-                ptr::addr_of!(class_descriptor.function_descriptors)
-            );
-
-            log::info!(
-                "yieldFunctionDescriptors: {:p}",
-                ptr::addr_of!(class_descriptor.yield_function_descriptors)
-            );
-
-            log::info!(
-                "callbackDescriptors: {:p}",
-                ptr::addr_of!(class_descriptor.callback_descriptors)
-            );
+            let property_descriptors = &mut class_descriptor.property_descriptors;
+            log::info!("propertyDescriptors @ {:p}", property_descriptors);
         }
 
         thread::sleep(Duration::from_millis(50));
