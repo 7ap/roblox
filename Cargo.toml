@@ -16,10 +16,13 @@ panic = "abort"
 
 [dependencies]
 anyhow = "1.0"
+egui = "0.21"
+egui-d3d11 = "0.8"
 env_logger = "0.10"
 log = "0.4"
 pelite = "0.10"
 retour = "0.1"
+shroud = { version = "0.1", features = ["directx11"] }
 tokio = { version = "1", features = ["full"] }
 
 [dependencies.windows]
