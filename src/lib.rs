@@ -36,32 +36,13 @@ async fn main() -> Result<()> {
 
             for job in task_scheduler.get_jobs_info() {
                 let job = unsafe { &mut *job };
-
-                // Atrocious hack. Find better solution at some point.
-                let size: [c_char; 4] = job.name[16..20].try_into()?;
-                let size: isize = unsafe { mem::transmute_copy(&size) };
-
-                let name = if size >= 16 {
-                    let string = job.name.as_ptr() as *const *const c_char;
-                    unsafe { CStr::from_ptr(*string) }
-                } else {
-                    let string = job.name.as_ptr() as *const c_char;
-                    unsafe { CStr::from_ptr(string) }
-                };
-
-                log::info!("TaskSchedulerJob<{}> @ {:p}", name.to_str()?, job);
+                log::info!("TaskSchedulerJob<{}> @ {:p}", job.name.c_str()?, job);
             }
         }
 
         if unsafe { GetAsyncKeyState(VK_X.0 as i32) & 0x01 } == 0x01 {
             let data_model = unsafe { &mut *DataModel::get()? };
             log::info!("DataModel @ {:p}", data_model);
-
-            let class_descriptor = unsafe { &mut *data_model.descriptor };
-            log::info!("ClassDescriptor @ {:p}", class_descriptor);
-
-            let property_descriptors = &mut class_descriptor.property_descriptors;
-            log::info!("propertyDescriptors @ {:p}", property_descriptors);
         }
 
         thread::sleep(Duration::from_millis(50));

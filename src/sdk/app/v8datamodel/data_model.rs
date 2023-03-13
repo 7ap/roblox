@@ -23,7 +23,9 @@ impl DataModel {
         let task_scheduler = unsafe { &mut *TaskScheduler::get()? };
 
         let data_model = unsafe {
-            (&mut *(&mut *task_scheduler.get_jobs_by_name("Render")?).arbiter[0] as *mut usize)
+            (&mut *(&mut *task_scheduler.get_jobs_by_name("Render")?)
+                .arbiter
+                .px as *mut usize)
                 .byte_offset(0x04) as *mut Self
         };
 

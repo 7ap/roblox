@@ -62,19 +62,7 @@ impl TaskScheduler {
         while begin != end {
             let job = unsafe { &mut *mem::transmute::<usize, *mut TaskSchedulerJob>(*begin) };
 
-            // Atrocious hack. Find better solution at some point.
-            let size: [c_char; 4] = job.name[16..20].try_into()?;
-            let size: isize = unsafe { mem::transmute_copy(&size) };
-
-            let job_name = if size >= 16 {
-                let string = job.name.as_ptr() as *const *const c_char;
-                unsafe { CStr::from_ptr(*string) }
-            } else {
-                let string = job.name.as_ptr() as *const c_char;
-                unsafe { CStr::from_ptr(string) }
-            };
-
-            if job_name.to_str()? == name {
+            if job.name.c_str()? == name {
                 return Ok(unsafe { mem::transmute::<usize, *mut TaskSchedulerJob>(*begin) });
             }
 
@@ -91,21 +79,9 @@ impl TaskScheduler {
         while begin != end {
             let job = unsafe { &mut *mem::transmute::<usize, *mut TaskSchedulerJob>(*begin) };
 
-            // Atrocious hack. Find better solution at some point.
-            let size: [c_char; 4] = job.name[16..20].try_into()?;
-            let size: isize = unsafe { mem::transmute_copy(&size) };
-
-            let job_name = if size >= 16 {
-                let string = job.name.as_ptr() as *const *const c_char;
-                unsafe { CStr::from_ptr(*string) }
-            } else {
-                let string = job.name.as_ptr() as *const c_char;
-                unsafe { CStr::from_ptr(string) }
-            };
-
             log::info!(
                 "TaskScheduler::Job::{}, state: {}, seconds spend in job: {}",
-                job_name.to_str()?,
+                job.name.c_str()?,
                 "TODO",
                 "TODO"
             );
