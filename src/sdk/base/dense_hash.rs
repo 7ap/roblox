@@ -3,11 +3,6 @@ use std::ffi::*;
 use crate::sdk::extras::*;
 
 #[repr(C)]
-pub struct DenseHashSet {
-    _todo: usize,
-}
-
-#[repr(C)]
 pub struct DenseHashMap<Key, Value> {
     pub data: cxx::Vector<cxx::Pair<Key, Value>>, // 0x000..0x00C
     pub count: isize,                             // 0x00C..0x010

@@ -4,9 +4,6 @@
 mod hooks;
 mod sdk;
 
-use std::ffi::*;
-use std::mem;
-use std::ptr;
 use std::thread;
 use std::time::Duration;
 

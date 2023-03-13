@@ -1,4 +1,3 @@
-use std::ffi::c_char;
 use std::ops::Deref;
 
 use crate::sdk::app::reflection::*;
