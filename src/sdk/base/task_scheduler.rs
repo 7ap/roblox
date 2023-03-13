@@ -62,7 +62,7 @@ impl TaskScheduler {
         while begin != end {
             let job = unsafe { &mut *mem::transmute::<usize, *mut TaskSchedulerJob>(*begin) };
 
-            if job.name.c_str()? == name {
+            if job.name.r_str()? == name {
                 return Ok(unsafe { mem::transmute::<usize, *mut TaskSchedulerJob>(*begin) });
             }
 
@@ -81,7 +81,7 @@ impl TaskScheduler {
 
             log::info!(
                 "TaskScheduler::Job::{}, state: {}, seconds spend in job: {}",
-                job.name.c_str()?,
+                job.name.r_str()?,
                 "TODO",
                 "TODO"
             );
