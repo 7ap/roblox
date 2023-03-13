@@ -1,78 +1,62 @@
 #![feature(strict_provenance)]
-#![feature(ptr_from_ref)]
 #![feature(pointer_byte_offsets)]
 
-mod console;
-mod rbx;
+mod hooks;
+mod sdk;
 
+use std::ffi::*;
+use std::mem;
+use std::ptr;
 use std::thread;
-use std::usize;
+use std::time::Duration;
 
 use anyhow::Result;
+use env_logger::Env;
 use windows::Win32::Foundation::*;
+use windows::Win32::System::Console::*;
 use windows::Win32::System::LibraryLoader::*;
+use windows::Win32::UI::Input::KeyboardAndMouse::*;
 
-use rbx::instance::{DataModel, Instance};
-use rbx::TaskScheduler;
+#[tokio::main(flavor = "current_thread")]
+async fn main() -> Result<()> {
+    use crate::hooks::Hooks;
+    use crate::sdk::app::v8datamodel::*;
+    use crate::sdk::base::*;
 
-unsafe fn main() -> Result<()> {
-    console::attach();
+    env_logger::init_from_env(Env::default().default_filter_or("DEBUG"));
+    unsafe { AllocConsole() };
+    let hooks = Hooks::new();
 
-    loop {
-        let input = console::input("> ");
-        let input = input.trim();
+    hooks.enable().expect("hooks should be enabled");
 
-        if input.is_empty() {
-            continue;
-        }
+    while unsafe { !GetAsyncKeyState(VK_END.0 as i32) & 0x01 } == 0x01 {
+        if unsafe { GetAsyncKeyState(VK_Z.0 as i32) & 0x01 } == 0x01 {
+            let task_scheduler = unsafe { &mut *TaskScheduler::get()? };
+            log::info!("TaskScheduler @ {:p}", task_scheduler);
 
-        let command: Vec<&str> = input.split_whitespace().collect();
-
-        // TODO: This is *really* messy. Consider moving this into a submodule of console?
-        match command[0].to_lowercase().as_str() {
-            "get_jobs" => {
-                TaskScheduler::get().print_jobs();
-            }
-            "get_children" => {
-                let instance = if command.len() > 1 {
-                    let instance = command[1].trim_start_matches("0x");
-                    let instance = usize::from_str_radix(instance, 16);
-                    let instance = instance.unwrap() as *mut Instance;
-
-                    &*instance
-                } else {
-                    DataModel::get()
-                };
-
-                for child in instance.get_children().unwrap().iter() {
-                    log::info!("{} @ {:p}", child.get_name(), child.this);
-                }
-            }
-            "get_descendants" => {
-                let instance = if command.len() > 1 {
-                    let instance = command[1].trim_start_matches("0x");
-                    let instance = usize::from_str_radix(instance, 16);
-                    let instance = instance.unwrap() as *mut Instance;
-
-                    &*instance
-                } else {
-                    DataModel::get()
-                };
-
-                for descendant in instance.get_descendants().unwrap().iter() {
-                    log::info!("{} @ {:p}", descendant.get_full_name(), descendant.this);
-                }
-            }
-            "exit" => {
-                break;
-            }
-            _ => {
-                log::error!("\"{}\" is an invalid command.", command[0]);
+            for job in task_scheduler.get_jobs_info() {
+                let job = unsafe { &mut *job };
+                log::info!("TaskSchedulerJob<{}> @ {:p}", job.name.r_str()?, job);
             }
         }
+
+        if unsafe { GetAsyncKeyState(VK_X.0 as i32) & 0x01 } == 0x01 {
+            let data_model = unsafe { &mut *DataModel::get()? };
+            log::info!("DataModel @ {:p}", data_model);
+
+            for child in data_model.get_children() {
+                let child = unsafe { &mut *child };
+                let name = unsafe { (*child.name).r_str()? };
+
+                log::info!("\t{} @ {:p}", name, child);
+            }
+        }
+
+        thread::sleep(Duration::from_millis(50));
     }
 
-    console::detach();
+    hooks.disable().expect("hooks should be disabled");
+    unsafe { FreeConsole() };
 
     Ok(())
 }
