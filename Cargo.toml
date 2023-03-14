@@ -29,6 +29,8 @@ tokio = { version = "1", features = ["full"] }
 version = "*"
 features = [
     "Win32_Foundation",
+    "Win32_Graphics_Dxgi",
+    "Win32_Graphics_Dxgi_Common",
     "Win32_System_Console",
     "Win32_System_LibraryLoader",
     "Win32_UI_Input_KeyboardAndMouse",

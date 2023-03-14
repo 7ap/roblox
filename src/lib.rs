@@ -3,6 +3,7 @@
 
 mod hooks;
 mod sdk;
+mod ui;
 
 use std::thread;
 use std::time::Duration;
