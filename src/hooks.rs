@@ -10,7 +10,7 @@ pub struct Hooks {
     freeconsole: &'static StaticDetour<freeconsole::FnFreeConsole>,
     present: &'static StaticDetour<present::FnPresent>,
     resizebuffers: &'static StaticDetour<resizebuffers::FnResizeBuffers>,
-    wndproc: (),
+    // wndproc: (),
 }
 
 impl Hooks {
@@ -19,7 +19,7 @@ impl Hooks {
             freeconsole: freeconsole::create().expect("hook `freeconsole` should be created"),
             present: present::create().expect("hook `present` should be created"),
             resizebuffers: resizebuffers::create().expect("hook `resizebuffers` should be created"),
-            wndproc: (),
+            // wndproc: (),
         }
     }
 
@@ -37,7 +37,9 @@ impl Hooks {
                 .enable()
                 .expect("hook `resizebuffers` should be enabled`");
 
-            // wndproc::enable()?;
+            // TODO: Figure out a better way to do this - any "delay" is not desired.
+            std::thread::sleep(std::time::Duration::from_millis(100));
+            wndproc::enable().expect("hook `wndproc` should be enabled");
         };
 
         Ok(())

@@ -1,4 +1,5 @@
 use std::mem;
+use std::sync::Once;
 
 use anyhow::Result;
 use retour::static_detour;
@@ -16,6 +17,12 @@ static_detour! {
 }
 
 fn closure() -> bool {
+    static HOOKED: Once = Once::new();
+
+    HOOKED.call_once(|| {
+        log::debug!("`freeconsole` hooked!");
+    });
+
     true
 }
 

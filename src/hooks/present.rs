@@ -21,16 +21,18 @@ fn closure(swap_chain: IDXGISwapChain, sync_interval: u32, flags: u32) -> HRESUL
     static HOOKED: Once = Once::new();
 
     HOOKED.call_once(|| unsafe {
-        let desc = swap_chain.GetDesc().expect("could not get swap chain desc");
+        log::debug!("`present` hooked!");
+
+        // Nifty "hack" to fight windows-rs, stolen from unknowntrojan (https://github.com/unknowntrojan)
+        // https://github.com/sy1ntexx/egui-d3d11/blob/master/example-wnd/src/lib.rs#LL51-L53
+        let mut desc = mem::zeroed();
+        swap_chain.GetDesc(&mut desc).unwrap();
 
         if desc.OutputWindow.0 == -1 {
             panic!("window handle is invalid");
         }
 
         OUTPUT_WINDOW = Some(desc.OutputWindow);
-
-        // TODO: Move this back into `hooks.rs`
-        super::wndproc::enable().expect("hook `wndproc` should be enabled");
     });
 
     unsafe { PresentHook.call(swap_chain, sync_interval, flags) }

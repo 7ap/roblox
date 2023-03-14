@@ -1,4 +1,5 @@
 use std::mem;
+use std::sync::Once;
 
 use anyhow::Result;
 use windows::Win32::Foundation::*;
@@ -7,6 +8,12 @@ use windows::Win32::UI::WindowsAndMessaging::*;
 pub static mut WND_PROC: Option<WNDPROC> = None;
 
 fn closure(hwnd: HWND, msg: u32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
+    static HOOKED: Once = Once::new();
+
+    HOOKED.call_once(|| {
+        log::debug!("`wndproc` hooked!");
+    });
+
     unsafe {
         CallWindowProcA(
             WND_PROC.expect("`WND_PROC` is null"),
