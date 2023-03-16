@@ -7,5 +7,5 @@ pub enum Permissions {
     WritePlayer = 4,
     RobloxScript = 5,
     RobloxEngine = 6,
-    NoAccessible = 7,
+    NotAccessible = 7,
 }
